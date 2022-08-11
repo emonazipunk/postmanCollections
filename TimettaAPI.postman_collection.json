@@ -1,0 +1,382 @@
+{
+	"info": {
+		"_postman_id": "e24c7ba7-cfee-4973-b463-bee3ffbe2cd6",
+		"name": "TimettaAPI",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "14229849"
+	},
+	"item": [
+		{
+			"name": "login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();\r",
+							"    pm.collectionVariables.set(\"access_token\", jsonData.access_token);\r",
+							"    pm.collectionVariables.set(\"refresh_token\", jsonData.refresh_token);\r",
+							"\r",
+							"    pm.test(\"Status Code is 200\", function () {\r",
+							"    pm.expect(pm.response.code).to.equal(200)\r",
+							"    })"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "client_id",
+							"value": "external",
+							"type": "text"
+						},
+						{
+							"key": "scope",
+							"value": "all offline_access",
+							"type": "text"
+						},
+						{
+							"key": "grant_type",
+							"value": "password",
+							"type": "text"
+						},
+						{
+							"key": "username",
+							"value": "{{user_email}}",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "{{password}}",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://auth.timetta.com/connect/token",
+					"protocol": "https",
+					"host": [
+						"auth",
+						"timetta",
+						"com"
+					],
+					"path": [
+						"connect",
+						"token"
+					],
+					"query": [
+						{
+							"key": "",
+							"value": "",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetUsers",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"var jsonData = pm.response.json();\r",
+							"var i;\r",
+							"for(i = 0; i < jsonData.value.length ; i++){\r",
+							"    if(jsonData.value[i].name == \"Александр Нестеров\" ){\r",
+							"        pm.collectionVariables.set(\"userNesterovId\", jsonData.value[i].id);\r",
+							"    }\r",
+							"    if(jsonData.value[i].name == \"Иван Агафонов\" ){\r",
+							"        pm.collectionVariables.set(\"userAgafonovId\", jsonData.value[i].id);\r",
+							"    }\r",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://api.timetta.com/odata/Users",
+					"protocol": "https",
+					"host": [
+						"api",
+						"timetta",
+						"com"
+					],
+					"path": [
+						"odata",
+						"Users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetProjectBillingTypes",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"var jsonData = pm.response.json();\r",
+							"var i;\r",
+							"for(i = 0; i < jsonData.value.length ; i++){\r",
+							"    if(jsonData.value[i].code == \"FixedBid\" ){\r",
+							"        pm.collectionVariables.set(\"fixedBidId\", jsonData.value[i].id);\r",
+							"    }\r",
+							"}\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://api.timetta.com/odata/ProjectBillingTypes",
+					"protocol": "https",
+					"host": [
+						"api",
+						"timetta",
+						"com"
+					],
+					"path": [
+						"odata",
+						"ProjectBillingTypes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Project",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							"var jsonData = pm.response.json();\r",
+							"pm.collectionVariables.set(\"projectName\", jsonData.name);\r",
+							"pm.collectionVariables.set(\"projectId\", jsonData.id);\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('projectName', 'Проект Кудрявцев Михаил Александрович № \"{{$randomInt}}\"');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\":\"Проект Кудрявцев Михаил Александрович № {{$randomInt}}\",\r\n    \"billingTypeId\": \"{{fixedBidId}}\",\r\n    \"managerId\": \"{{userNesterovId}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://api.timetta.com/odata/Projects",
+					"protocol": "https",
+					"host": [
+						"api",
+						"timetta",
+						"com"
+					],
+					"path": [
+						"odata",
+						"Projects"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "EditProject",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 204\", function () {\r",
+							"    pm.response.to.have.status(204);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"managerId\": \"{{userAgafonovId}}\",\r\n    \"organizationId\": \"{{glavproductId}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://api.timetta.com/odata/Projects({{projectId}})",
+					"protocol": "https",
+					"host": [
+						"api",
+						"timetta",
+						"com"
+					],
+					"path": [
+						"odata",
+						"Projects({{projectId}})"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "https://auth.timetta.com/connect/token"
+		},
+		{
+			"key": "access_token",
+			"value": ""
+		},
+		{
+			"key": "refresh_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_email",
+			"value": "NesterovA@test-task.ru",
+			"type": "string"
+		},
+		{
+			"key": "password",
+			"value": "gG9NfM",
+			"type": "string"
+		},
+		{
+			"key": "userNesterovId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "userAgafonovId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "fixedBidId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "projectName",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "projectId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "glavproductId",
+			"value": "76797ca0-dfdc-4138-967a-73eccfb9341c",
+			"type": "string"
+		}
+	]
+}
